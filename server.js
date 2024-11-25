@@ -1,18 +1,13 @@
-import express from "express"; // Importa o framework Express, que será utilizado para criar o servidor web.
+import express from "express";
+import routes from './src/routes/postsRoutes.js';
 
-import conectarAoBanco from "./src/config/dbConfig.js"; // Importa a função que estabelece a conexão com o banco de dados.
 
-const conexao = await conectarAoBanco(process.env.STRING_CONEXAO); // Estabelece a conexão com o banco de dados, utilizando a string de conexão fornecida pela variável de ambiente STRING_CONEXAO.
+// Criação da aplicação Express
+const app = express();
+routes(app);
 
-const app = express(); // Cria uma instância do Express, que será o nosso servidor.
 
+// Inicia o servidor na porta 3000
 app.listen(3000, () => {
-    console.log("Servidor escutando..."); // Inicia o servidor na porta 3000 e exibe uma mensagem no console indicando que o servidor está em execução.
+    console.log("servidor escutando...");
 });
-
-async function getAllPosts() {
-    const db = conexao.db("imersao-instabytes"); // Seleciona o banco de dados "imersao-instabytes" na conexão estabelecida.
-    const colecao = db.collection("posts"); // Seleciona a coleção "posts" dentro do banco de dados.
-    return colecao.find().toArray(); // Realiza uma consulta para encontrar todos os documentos da coleção "posts" e retorna os resultados em um array.
-};
-
