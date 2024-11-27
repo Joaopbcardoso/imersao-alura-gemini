@@ -1,36 +1,43 @@
-import express from "express";
-import multer from "multer";
-import { listarPosts, postarNovoPost, uploadImage } from "../controllers/postsController.js";
+import express from "express"; // Importa o framework Express para criar a aplicação web
+import multer from "multer"; // Importa o Multer para lidar com uploads de arquivos
+import { listarPosts, postarNovoPost, uploadImage, atualizarNovoPost } from "../controllers/postsController.js"; // Importa as funções controladoras para lidar com a lógica dos posts
+import cors from "cors";
 
-// Importa o framework Express para criar a API.
-// Importa o módulo multer para lidar com o upload de imagens.
-// Importa as funções controladoras para posts do arquivo `postsController.js`.
+const corsOptions = {
+  origin: "http://localhost:8000",
+  optionsSuccessStatus: 200
+}
 
+// Configura o armazenamento do Multer para uploads de imagens
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
-    cb(null, 'uploads/'); // Define a pasta "uploads" como destino para os arquivos enviados.
+    // Especifica o diretório para armazenar as imagens enviadas
+    cb(null, 'uploads/'); // Substitua por seu caminho de upload desejado
   },
   filename: function (req, file, cb) {
-    cb(null, file.originalname); // Mantém o nome original do arquivo enviado.
+    // Mantém o nome original do arquivo por simplicidade
+    cb(null, file.originalname); // Considere usar uma estratégia de geração de nomes únicos para produção
   }
 });
 
-// Configura o armazenamento para o multer.
-// Utiliza o armazenamento em disco (`diskStorage`).
-// Define o destino (`destination`) para salvar os arquivos na pasta "uploads".
-// Define o nome do arquivo (`filename`) utilizando o nome original enviado pelo cliente.
+// Cria uma instância do middleware Multer
+const upload = multer({ storage: storage });
 
-const upload = multer({ storage }); // Cria uma instância do multer utilizando o armazenamento configurado.
-
+// Define as rotas usando o objeto Express app
 const routes = (app) => {
-  app.use(express.json()); // Habilita o middleware para interpretar dados JSON nas requisições.
+  // Permite que o servidor interprete corpos de requisições no formato JSON
+  app.use(express.json());
+  app.use(cors(corsOptions))
+  // Rota para recuperar uma lista de todos os posts
+  app.get("/posts", listarPosts); // Chama a função controladora apropriada
 
-  // Define as rotas da API:
-  app.get("/posts", listarPosts); // Rota para listar todos os posts (método GET em "/posts").
-  app.post("/posts", postarNovoPost); // Rota para criar um novo post (método POST em "/posts").
-  app.post("/upload", upload.single("Imagem"), uploadImage); // Rota para upload de imagem e criação de post (método POST em "/upload", utiliza o middleware `upload.single("Imagem")` para processar o arquivo enviado com o campo "Imagem").
+  // Rota para criar um novo post
+  app.post("/posts", postarNovoPost); // Chama a função controladora para criação de posts
 
-  // Cada rota utiliza a função controladora correspondente para tratar a lógica de negócio.
+  // Rota para upload de imagens (assumindo uma única imagem chamada "imagem")
+  app.post("/upload", upload.single("imagem"), uploadImage); // Chama a função controladora para processamento da imagem`
+
+  app.put("/upload/:id", atualizarNovoPost)
 };
 
-export default routes; // Exporta a função `routes` para ser utilizada no arquivo principal da aplicação.
+export default routes;
